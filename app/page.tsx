@@ -1,101 +1,127 @@
-import Image from "next/image";
+"use client"
+import { useState } from 'react'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Activity, Stethoscope, User, Send, Menu } from 'lucide-react'
 
-export default function Home() {
+export default function HealthChat() {
+  const [messages, setMessages] = useState([
+    { id: 1, content: "Hello! How can I assist you with your health today?", sender: "ai" },
+  ]);
+  const [input, setInput] = useState("");
+
+  const handleSend = async () => {
+    if (input.trim()) {
+      // Add user's message
+      const userMessage = { id: messages.length + 1, content: input, sender: "user" };
+      setMessages((prevMessages) => [...prevMessages, userMessage]);
+      setInput("");
+
+      try {
+        // Send message to AI backend
+        // const response = await fetch('http://localhost:3001/api/ai-response', {
+        const response = await fetch('https://050f-197-250-226-241.ngrok-free.app/afya/respond', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: input }),  // Ensure your backend expects this format
+        });
+
+        // Parse and display AI response
+        if (response.ok) {
+          const data = await response.json();
+          // if (data.reply) {  // Ensure 'reply' exists in the response
+          if(data.message){
+            const aiMessage = { id: messages.length + 2, content: data.message, sender: "ai" };
+            console.log('AI Response:', aiMessage.messsage);
+            setMessages((prevMessages) => [...prevMessages, aiMessage]);
+          } else {
+            console.error('No reply in response:', data);
+          }
+        } else {
+          console.error('Error fetching AI response:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Fetch error:', error);
+      }
+    }
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="flex h-screen bg-gray-100">
+      {/* Sidebar */}
+      <div className="hidden md:flex flex-col w-64 bg-white border-r">
+        <div className="p-4">
+          <h2 className="text-xl font-bold">Quick Actions</h2>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <nav className="flex-1">
+          <Button variant="ghost" className="w-full justify-start">
+            <Activity className="mr-2 h-4 w-4" />
+            Chat with EatWise AI
+          </Button>
+          <Button variant="ghost" className="w-full justify-start">
+            <Stethoscope className="mr-2 h-4 w-4" />
+            Settings
+          </Button>
+        </nav>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <header className="bg-white border-b p-4 flex justify-between items-center">
+          <h1 className="text-xl font-bold">EATWISE AI</h1>
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" className="md:hidden">
+              <Menu className="h-6 w-6" />
+            </Button>
+            <Avatar>
+              <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
+              <AvatarFallback><User className="h-5 w-5" /></AvatarFallback>
+            </Avatar>
+          </div>
+        </header>
+
+        {/* Chat Area */}
+        <ScrollArea className="flex-1 p-4">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`px-[20px] flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
+            >
+              <div
+                className={`max-w-[70%] p-3 rounded-lg ${
+                  message.sender === 'user' ? 'bg-blue-500 text-white' : 'bg-white'
+                }`}
+              >
+                {message.content}
+              </div>
+            </div>
+          ))}
+        </ScrollArea>
+
+        {/* Input Area */}
+        <div className="p-4 bg-white border-t">
+          <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex gap-2">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type your health question..."
+              className="flex-1"
+            />
+            <Button type="submit">
+              <Send className="h-4 w-4" />
+              <span className="sr-only">Send message</span>
+            </Button>
+          </form>
+        </div>
+
+        {/* Footer */}
+        <footer className="bg-white border-t p-4 text-center text-sm text-gray-500">
+          HealthChat AI is not a substitute for professional medical advice, diagnosis, or treatment.
+        </footer>
+      </div>
     </div>
-  );
+  )
 }
